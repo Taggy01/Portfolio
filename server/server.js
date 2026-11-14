@@ -16,25 +16,12 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  process.env.CLIENT_URL,
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.error("Blocked by CORS:", origin);
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-
 
 app.use(cookieParser());
 
