@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminLogin from "./AdminLogin";
 import AdminLayout from "./AdminLayout";
-
-const API = "http://localhost:5000";
+import api from "../api";
 
 export default function AdminApp() {
   const [admin, setAdmin] = useState(null);
@@ -11,10 +10,9 @@ export default function AdminApp() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${API}/api/auth/me`, {
-          credentials: "include",
+        const { data } = await api.get("/api/auth/me", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && data.admin) {
           setAdmin(data.admin);
         }

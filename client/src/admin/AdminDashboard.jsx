@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API_BASE = "http://localhost:5000";
+import api from "../api";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -14,14 +13,14 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const [projectsRes, skillsRes, achievementsRes] = await Promise.all([
-          fetch(`${API_BASE}/api/portfolio/projects`, { credentials: "include" }),
-          fetch(`${API_BASE}/api/portfolio/skills`, { credentials: "include" }),
-          fetch(`${API_BASE}/api/portfolio/achievements`, { credentials: "include" }),
+          api.get("/api/portfolio/projects", { withCredentials: true }),
+          api.get("/api/portfolio/skills", { withCredentials: true }),
+          api.get("/api/portfolio/achievements", { withCredentials: true }),
         ]);
 
-        const projects = await projectsRes.json();
-        const skills = await skillsRes.json();
-        const achievements = await achievementsRes.json();
+        const projects = projectsRes.data;
+        const skills = skillsRes.data;
+        const achievements = achievementsRes.data;
 
         setStats({
           projects: projects.data?.length || 0,

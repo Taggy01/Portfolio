@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API = "http://localhost:5000";
+import api from "../../api";
 
 const EMPTY_SKILL = { category: "", items: "" };
 
@@ -23,10 +22,9 @@ export default function SkillsManager() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const res = await fetch(`${API}/api/portfolio/skills`, {
-          credentials: "include",
+        const { data } = await api.get("/api/portfolio/skills", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           setSkills(data.data);
         }
@@ -76,19 +74,15 @@ export default function SkillsManager() {
     };
 
     try {
-      const url = editId
-        ? `${API}/api/portfolio/skills/${editId}`
-        : `${API}/api/portfolio/skills`;
-      const method = editId ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
+      const { data } = await api.request({
+        url: editId
+          ? `/api/portfolio/skills/${editId}`
+          : "/api/portfolio/skills",
+        method: editId ? "PUT" : "POST",
+        data: payload,
+        withCredentials: true,
       });
 
-      const data = await res.json();
       if (data.success) {
         flash("success", editId ? "Skill updated!" : "Skill added!");
         closeForm();
@@ -96,8 +90,11 @@ export default function SkillsManager() {
       } else {
         flash("error", data.message || "Failed to save skill");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     } finally {
       setSaving(false);
     }
@@ -107,19 +104,20 @@ export default function SkillsManager() {
     if (!confirm("Delete this skill category?")) return;
 
     try {
-      const res = await fetch(`${API}/api/portfolio/skills/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+      const { data } = await api.delete(`/api/portfolio/skills/${id}`, {
+        withCredentials: true,
       });
-      const data = await res.json();
       if (data.success) {
         flash("success", "Skill deleted");
         setSkills(skills.filter((s) => s._id !== id));
       } else {
         flash("error", data.message || "Failed to delete");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     }
   };
 

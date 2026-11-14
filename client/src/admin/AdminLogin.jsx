@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE = "http://localhost:5000";
+import api from "../api";
 
 export default function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -14,14 +13,9 @@ export default function AdminLogin({ onLogin }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+      const { data } = await api.post("/api/auth/login", { email, password }, {
+        withCredentials: true,
       });
-
-      const data = await res.json();
 
       if (!data.success) {
         setError(data.message || "Login failed");
@@ -30,8 +24,11 @@ export default function AdminLogin({ onLogin }) {
       }
 
       onLogin(data.admin);
-    } catch {
-      setError("Network error. Make sure the server is running.");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+        "Network error. Make sure the server is running."
+      );
       setLoading(false);
     }
   };

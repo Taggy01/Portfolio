@@ -5,8 +5,7 @@ import ProjectsManager from "./sections/ProjectsManager";
 import SkillsManager from "./sections/SkillsManager";
 import AchievementsManager from "./sections/AchievementsManager";
 import ContactManager from "./sections/ContactManager";
-
-const API_BASE = "http://localhost:5000";
+import api from "../api";
 
 const sections = [
   { key: "dashboard", label: "Dashboard", icon: "📊" },
@@ -23,9 +22,8 @@ export default function AdminLayout({ admin, onLogout }) {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
+      await api.post("/api/auth/logout", {}, {
+        withCredentials: true,
       });
     } catch {
       // Logout even if request fails

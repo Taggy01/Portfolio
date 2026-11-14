@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API = "http://localhost:5000";
+import api from "../../api";
 
 const EMPTY_ACHIEVEMENT = { title: "", description: "", date: "", icon: "" };
 
@@ -23,10 +22,9 @@ export default function AchievementsManager() {
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        const res = await fetch(`${API}/api/portfolio/achievements`, {
-          credentials: "include",
+        const { data } = await api.get("/api/portfolio/achievements", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           setAchievements(data.data);
         }
@@ -68,19 +66,15 @@ export default function AchievementsManager() {
     setSaving(true);
 
     try {
-      const url = editId
-        ? `${API}/api/portfolio/achievements/${editId}`
-        : `${API}/api/portfolio/achievements`;
-      const method = editId ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
+      const { data } = await api.request({
+        url: editId
+          ? `/api/portfolio/achievements/${editId}`
+          : "/api/portfolio/achievements",
+        method: editId ? "PUT" : "POST",
+        data: form,
+        withCredentials: true,
       });
 
-      const data = await res.json();
       if (data.success) {
         flash("success", editId ? "Achievement updated!" : "Achievement added!");
         closeForm();
@@ -88,8 +82,11 @@ export default function AchievementsManager() {
       } else {
         flash("error", data.message || "Failed to save achievement");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     } finally {
       setSaving(false);
     }
@@ -99,19 +96,20 @@ export default function AchievementsManager() {
     if (!confirm("Delete this achievement?")) return;
 
     try {
-      const res = await fetch(`${API}/api/portfolio/achievements/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+      const { data } = await api.delete(`/api/portfolio/achievements/${id}`, {
+        withCredentials: true,
       });
-      const data = await res.json();
       if (data.success) {
         flash("success", "Achievement deleted");
         setAchievements(achievements.filter((a) => a._id !== id));
       } else {
         flash("error", data.message || "Failed to delete");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     }
   };
 

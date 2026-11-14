@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API = "http://localhost:5000";
+import api from "../../api";
 
 const EMPTY_PROJECT = {
   number: "",
@@ -31,10 +30,9 @@ export default function ProjectsManager() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch(`${API}/api/portfolio/projects`, {
-          credentials: "include",
+        const { data } = await api.get("/api/portfolio/projects", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           setProjects(data.data);
         }
@@ -90,19 +88,15 @@ export default function ProjectsManager() {
     };
 
     try {
-      const url = editId
-        ? `${API}/api/portfolio/projects/${editId}`
-        : `${API}/api/portfolio/projects`;
-      const method = editId ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
+      const { data } = await api.request({
+        url: editId
+          ? `/api/portfolio/projects/${editId}`
+          : "/api/portfolio/projects",
+        method: editId ? "PUT" : "POST",
+        data: payload,
+        withCredentials: true,
       });
 
-      const data = await res.json();
       if (data.success) {
         flash("success", editId ? "Project updated!" : "Project added!");
         closeForm();
@@ -110,8 +104,11 @@ export default function ProjectsManager() {
       } else {
         flash("error", data.message || "Failed to save project");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     } finally {
       setSaving(false);
     }
@@ -121,19 +118,20 @@ export default function ProjectsManager() {
     if (!confirm("Delete this project?")) return;
 
     try {
-      const res = await fetch(`${API}/api/portfolio/projects/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+      const { data } = await api.delete(`/api/portfolio/projects/${id}`, {
+        withCredentials: true,
       });
-      const data = await res.json();
       if (data.success) {
         flash("success", "Project deleted");
         setProjects(projects.filter((p) => p._id !== id));
       } else {
         flash("error", data.message || "Failed to delete");
       }
-    } catch {
-      flash("error", "Unable to connect to server");
+    } catch (error) {
+      flash(
+        "error",
+        error.response?.data?.message || "Unable to connect to server"
+      );
     }
   };
 

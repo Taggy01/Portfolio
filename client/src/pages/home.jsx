@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import api from "../api";
 
 export default function Home() {
     const [content, setContent] = useState({
@@ -26,17 +25,10 @@ export default function Home() {
                 ];
                 const responses = await Promise.all(
                     endpoints.map((endpoint) =>
-                        fetch(`${API_BASE}/api/portfolio/${endpoint}`)
+                        api.get(`/api/portfolio/${endpoint}`)
                     )
                 );
-                const results = await Promise.all(
-                    responses.map(async (response) => {
-                        if (!response.ok) {
-                            throw new Error("Unable to load portfolio content");
-                        }
-                        return response.json();
-                    })
-                );
+                const results = responses.map((response) => response.data);
 
                 if (results.some((result) => !result.success)) {
                     throw new Error("Unable to load portfolio content");
@@ -52,7 +44,9 @@ export default function Home() {
                 });
                 setDataError("");
             } catch (error) {
-                setDataError(error.message);
+                setDataError(
+                    error.response?.data?.message || "Unable to load portfolio content"
+                );
             }
         };
 

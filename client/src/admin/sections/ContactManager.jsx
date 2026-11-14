@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API = "http://localhost:5000";
+import api from "../../api";
 
 export default function ContactManager() {
   const [form, setForm] = useState({
@@ -18,10 +17,9 @@ export default function ContactManager() {
   useEffect(() => {
     const fetchContact = async () => {
       try {
-        const res = await fetch(`${API}/api/portfolio/contact`, {
-          credentials: "include",
+        const { data } = await api.get("/api/portfolio/contact", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && data.data) {
           const d = data.data;
           setForm({
@@ -49,21 +47,20 @@ export default function ContactManager() {
     setStatus(null);
 
     try {
-      const res = await fetch(`${API}/api/portfolio/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
+      const { data } = await api.post("/api/portfolio/contact", form, {
+        withCredentials: true,
       });
 
-      const data = await res.json();
       if (data.success) {
         setStatus({ type: "success", text: "Contact info saved successfully!" });
       } else {
         setStatus({ type: "error", text: data.message || "Failed to save" });
       }
-    } catch {
-      setStatus({ type: "error", text: "Unable to connect to server" });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        text: error.response?.data?.message || "Unable to connect to server",
+      });
     } finally {
       setSaving(false);
       setTimeout(() => setStatus(null), 4000);

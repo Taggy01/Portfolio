@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API = "http://localhost:5000";
+import api from "../../api";
 
 function StatusMessage({ message }) {
   if (!message) return null;
@@ -32,10 +31,9 @@ export default function AboutManager() {
   useEffect(() => {
     const fetchAbout = async () => {
       try {
-        const res = await fetch(`${API}/api/portfolio/about`, {
-          credentials: "include",
+        const { data } = await api.get("/api/portfolio/about", {
+          withCredentials: true,
         });
-        const data = await res.json();
         if (data.success && data.data) {
           const d = data.data;
           setForm({
@@ -89,28 +87,27 @@ export default function AboutManager() {
         // keep as string
       }
 
-      const res = await fetch(`${API}/api/portfolio/about`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
+      const { data } = await api.post("/api/portfolio/about", {
           heroName: form.heroName,
           heroRole: form.heroRole,
           title: form.title,
           description: descriptionParagraphs,
           education,
           experience,
-        }),
+        }, {
+          withCredentials: true,
       });
 
-      const data = await res.json();
       if (data.success) {
         setStatus({ type: "success", text: "About section saved successfully!" });
       } else {
         setStatus({ type: "error", text: data.message || "Failed to save" });
       }
-    } catch {
-      setStatus({ type: "error", text: "Unable to connect to server" });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        text: error.response?.data?.message || "Unable to connect to server",
+      });
     } finally {
       setSaving(false);
       setTimeout(() => setStatus(null), 4000);
