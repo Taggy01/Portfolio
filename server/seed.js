@@ -9,9 +9,8 @@ dns.setServers(["8.8.8.8", "0.0.0.0"]);
 
 const seedAdmin = async () => {
   try {
-    const isProduction = process.env.NODE_ENV === "production";
-    const email = process.env.ADMIN_EMAIL || (isProduction ? "" : "admin@portfolio.com");
-    const password = process.env.ADMIN_PASSWORD || (isProduction ? "" : "Admin@123");
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
 
     if (!email || !password) {
       throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD before seeding in production");
